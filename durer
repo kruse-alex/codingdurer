@@ -1,0 +1,104 @@
+#############################################################################################################################################
+# MOMA
+#############################################################################################################################################
+
+setwd("C:/Users/akruse/Documents/R/Work_Dic/")
+dataset = read.csv("MoMAExhibitions1929to1989.csv", header = T, sep = ",")
+
+require(dplyr)
+require(reshape2)
+require(ggplot2)
+dataset = filter(dataset, dataset$ExhibitionRole == "Artist")
+dataset = dataset[dataset$Gender %in% c("Female","Male"), ]
+dataset$ExhibitionBeginDate = as.Date(dataset$ExhibitionBeginDate, "%m/%d/%Y")
+dataset = select(dataset, ExhibitionBeginDate, Gender)
+dataset = melt(dataset)
+
+#create histogram gender time
+ggplot(dataset, aes(value, fill=Gender)) + geom_bar()
+
+
+#############################################################################################################################################
+# EUROPEANA
+#############################################################################################################################################
+
+require(reuropeana)
+
+out = eu_search("Marcel Duchamp", key = "CFNAvVnYN", limit = 100)
+sapply(out$items, "[[", "country")
+
+#############################################################################################################################################
+# TATE
+#############################################################################################################################################
+
+setwd("C:/Users/akruse/Documents/R/Work_Dic/coding")
+dataset = read.csv("artwork_data.csv", header = T, sep = ",")
+
+require(dplyr)
+require(reshape2)
+require(ggplot2)
+dataset = filter(dataset, dataset$ExhibitionRole == "Artist")
+dataset = dataset[dataset$Gender %in% c("Female","Male"), ]
+dataset$ExhibitionBeginDate = as.Date(dataset$ExhibitionBeginDate, "%m/%d/%Y")
+dataset = select(dataset, ExhibitionBeginDate, Gender)
+dataset = melt(dataset)
+
+#create histogram gender time
+ggplot(dataset, aes(value, fill=Gender)) + geom_bar()
+
+
+
+
+
+
+
+
+
+
+#############################################################################################################################################
+# TATE JSON
+#############################################################################################################################################
+
+setwd("C:/Users/akruse/Documents/R/Work_Dic/")
+
+
+library(rjson)
+filenames <- list.files("C:/Users/akruse/Documents/R/Work_Dic/coding/tate/collection-master/artworks/a/000", pattern="*.json", full.names=TRUE) # this should give you a character vector, with each file name represented by an entry
+myJSON <- lapply(bindrows, filenames, function(x) as.data.frame(flatten(fromJSON(file=x))))
+
+
+result <- fromJSON(file ="C:/Users/akruse/Documents/R/Work_Dic/coding/tate/collection-master/artworks/a/000/a00001-1035.json")
+result = as.data.frame(flatten(result))
+
+result2 <- fromJSON(file ="C:/Users/akruse/Documents/R/Work_Dic/coding/tate/collection-master/artworks/a/000/a00002-1036.json")
+result2 = as.data.frame(flatten(result2))
+
+data = bind_rows(result, result2)
+
+
+for(i in 0:length(filenames)){
+  
+}
+
+
+data = do.call(c, unlist(myJSON, recursive=FALSE))
+
+n <- length(data[[1]])
+DF <- structure(data, row.names = c(NA, -n), class = "data.frame")
+
+
+renquote <- function(l) if (is.list(l)) lapply(l, renquote) else enquote(l)
+
+data = lapply(unlist(renquote(myJSON)), eval)
+data = flatten(data)
+
+json_file <- lapply(json_list, function(x) {
+  x[sapply(x, is.null)] <- NA
+  unlist(x)
+})
+
+data = as.data.frame(flatten(json_file))
+
+
+
+
